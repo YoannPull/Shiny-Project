@@ -11,23 +11,24 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
-        )
-    )
+  titlePanel("Exploration des Offres d'Emploi"),
+  
+  # Filtres en haut
+  fluidRow(
+    column(2, selectInput("secteurInput", "Secteur:", 
+                          choices = c("Tous", unique(job_data$SecteurEntreprise)))),
+    column(2, selectInput("posteInput", "Intitulé de Poste:", 
+                          choices = c("Tous", unique(job_data$IntituléPoste)))),
+    column(2, selectInput("lieuInput", "Lieu d'Exercice:", 
+                          choices = c("Tous", unique(job_data$LieuExercice)))),
+    column(2, selectInput("salaireInput", "Fourchette Salariale:", 
+                          choices = c("Tous", unique(job_data$FourchetteSalaire)))),
+    column(2, selectInput("typeEmploiInput", "Type d'Emploi:", 
+                          choices = c("Tous", unique(job_data$TypeEmploi))))
+  ),
+  
+  # Tableau principal
+  mainPanel(
+    dataTableOutput("tableAnnonces")
+  )
 )
