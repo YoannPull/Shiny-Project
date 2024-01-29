@@ -54,9 +54,3 @@ print(job_data)
 ```{r}
 write.csv2(job_data, file = "data/job_data.csv")
 ```
-
-
-```{r}
- 1 + 3
-```
-
