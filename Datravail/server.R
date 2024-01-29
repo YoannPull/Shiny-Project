@@ -5,7 +5,7 @@ job_data <- read.csv2("../data/job_data.csv")
 setDT(job_data)
 
 function(input, output, session) {
-
+  
   
   filteredData <- reactive({
     dataFiltered <- job_data
@@ -28,7 +28,7 @@ function(input, output, session) {
   output$tableAnnonces <- DT::renderDataTable({
     filteredData()
   }, options = list(lengthChange = FALSE, pageLength = 10,
-                    autoWidth = TRUE, dom =),
+                    autoWidth = TRUE, dom = 't'),
   selection = "single")
   
   observeEvent(input$tableAnnonces_rows_selected, {
