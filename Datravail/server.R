@@ -28,7 +28,7 @@ function(input, output, session) {
   output$tableAnnonces <- DT::renderDataTable({
     filteredData()
   }, options = list(lengthChange = FALSE, pageLength = 10,
-                    autoWidth = TRUE, dom = 't'),
+                    autoWidth = TRUE, dom =),
   selection = "single")
   
   observeEvent(input$tableAnnonces_rows_selected, {
