@@ -9,7 +9,10 @@ function(input, output, session) {
   
   filteredData <- reactive({
     dataFiltered <- job_data
+    
     filters <- list(
+      
+      # Différents Filtres
       SecteurEntreprise = input$secteurInput,
       IntituléPoste = input$posteInput,
       LieuExercice = input$lieuInput,
@@ -21,12 +24,35 @@ function(input, output, session) {
         dataFiltered <- dataFiltered[get(filterName) == filters[[filterName]], ]
       }
     }
-    dataFiltered[,.(RechercheEffectuée,IntituléPoste,FourchetteSalaire,
-                    Entreprise,LieuExercice,TypeEmploi)] 
+    
+    # Filtre par saisie de compétences
+    if (input$competenceInput != "") {
+      # Convertir les entrées en minuscules et les diviser en mots
+      competencesSaisies <- unlist(strsplit(tolower(input$competenceInput), split = "\\s*,\\s*"))
+      print(paste("Compétences saisies:", competencesSaisies))
+      
+      # Filtrer les données pour des correspondances partielles
+      dataFiltered <- dataFiltered[sapply(dataFiltered$CompétencesDemandées, function(x) {
+        print(paste("Compétences pour l'offre:", x))
+        
+        # Vérifier si au moins un mot-clé est présent dans les compétences demandées
+        matchFound <- any(sapply(competencesSaisies, function(motCle) {
+          matchResult <- grepl(motCle, tolower(x))
+          print(paste("Vérification de", motCle, "dans", x, ":", matchResult))
+          matchResult
+        }))
+        
+        print(paste("Correspondance trouvée:", matchFound))
+        matchFound
+      }), ]
+    }
+    dataFiltered
   })
   
+  
   output$tableAnnonces <- DT::renderDataTable({
-    filteredData()
+    filteredData()[, .(RechercheEffectuée, IntituléPoste, FourchetteSalaire,
+                       Entreprise, LieuExercice, TypeEmploi, DuréeEmploi, SiteSourceAnnonce, LienAnnonce)]
   }, options = list(lengthChange = FALSE, pageLength = 10,
                     autoWidth = TRUE, dom = 't'),
   selection = "single")
@@ -35,11 +61,11 @@ function(input, output, session) {
     print("Event Triggered")
     selectedRow <- input$tableAnnonces_rows_selected
     
-    # Imprimer la valeur de selectedRow pour debug mon codeeeee
+    # print la valeur de selectedRow pour debug mon codeeeee
     print(selectedRow)
     
     if(length(selectedRow) > 0) {
-      annonceDetails <- job_data[selectedRow, ]
+      annonceDetails <- filteredData()[selectedRow, ]
       showModal(modalDialog(
         title = "Détails de l'Annonce",
         h3(annonceDetails$IntituléPoste),
@@ -52,9 +78,12 @@ function(input, output, session) {
   ")),
         p(tags$p(class = "bold-underline", "Description du Poste : "), annonceDetails$DescriptionPoste),
         p(tags$p(class = "bold-underline", "Fourchette de Salaire :"), annonceDetails$FourchetteSalaire),
+        p(tags$p(class = "bold-underline", "Type d'emploi :"), annonceDetails$TypeEmploi),
         p(tags$p(class = "bold-underline", "Durée de l'emploi : "), annonceDetails$DuréeEmploi),
         p(tags$p(class = "bold-underline", "Site de l'annonce :"), annonceDetails$SiteSourceAnnonce),
         p(tags$p(class = "bold-underline", "Lien de l'annonce :"), annonceDetails$LienAnnonce),
+        p(tags$p(class = "bold-underline", "Compétences Demandées :"), annonceDetails$CompétencesDemandées),
+        
         footer = tagList(modalButton("Fermer"))
       ))
     }
