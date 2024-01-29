@@ -8,8 +8,11 @@
 #
 
 library(shiny)
+library(data.table)
 
-# Define UI for application that draws a histogram
+job_data <- read.csv2("../data/job_data.csv")
+setDT(job_data)
+
 fluidPage(
   titlePanel("Exploration des Offres d'Emploi"),
   
@@ -29,6 +32,6 @@ fluidPage(
   
   # Tableau principal
   mainPanel(
-    dataTableOutput("tableAnnonces")
+    DT::dataTableOutput("tableAnnonces")
   )
 )
