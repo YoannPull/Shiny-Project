@@ -9,7 +9,8 @@
 
 library(shiny)
 
-# Define UI for application that draws a histogram
+
+
 fluidPage(
   titlePanel("Exploration des Offres d'Emploi"),
   
@@ -29,6 +30,6 @@ fluidPage(
   
   # Tableau principal
   mainPanel(
-    dataTableOutput("tableAnnonces")
+    DT::dataTableOutput("tableAnnonces")
   )
 )
