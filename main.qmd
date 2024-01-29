@@ -4,23 +4,53 @@ format: html
 editor: visual
 ---
 
-## Quarto
+## Note :
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+On veut des exemples de site web
 
-## Running Code
+## Idée pour l'interface :
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+L'objectif est d'accéder rapidement à une offre d'emplois en utilisant des mots clefs
 
-```{r}
-1 + 1
-```
+On veut plusieurs pages : - Une qui présente l'application - Une qui permet de faire une recherche avec des mots clefs - Une qui permet de faire des recherches sur base de compétence - Une qui permet de mettre son cv et de créer un matching avec une annonce (sur quel critère on réalise le match ?) - Afficher quelques stats ?
 
-You can add options to executable code like this
+## Create an example of data frame
 
 ```{r}
-#| echo: false
-2 * 2
+
+job_data <- data.frame(
+  RechercheEffectuée = c("data analyst", "big data", "data scientist", "business intelligence", "data engineer", 
+                         "data analyst junior", "machine learning", "data visualization", "data manager", "data architect"),
+  IntituléPoste = c("Data Analyst", "Big Data Engineer", "Data Scientist", "Business Intelligence Analyst", "Data Engineer",
+                    "Junior Data Analyst", "Machine Learning Engineer", "Data Visualization Expert", "Data Manager", "Data Architect"),
+  DescriptionPoste = c("Analyse de données et reporting", "Traitement de grandes quantités de données", "Modélisation prédictive et statistiques", "Analyse de données pour insights business", "Conception et maintenance d'infrastructures de données",
+                       "Analyse de données, support aux équipes senior", "Développement d'algorithmes d'apprentissage automatique", "Création de visualisations de données complexes", "Gestion des opérations de données", "Architecture et conception de solutions de données"),
+  FourchetteSalaire = c("35k-45k", "50k-70k", "55k-75k", "40k-60k", "50k-70k", 
+                        "30k-40k", "60k-80k", "45k-55k", "50k-65k", "70k-90k"),
+  Entreprise = c("DataCorp", "BigDataTech", "PredictiveInsights", "BI Solutions", "DataPipeline Inc", 
+                 "Analytica", "ML Innovations", "VisuData", "DataManager Group", "ArchitectData"),
+  SecteurEntreprise = c("Analyse de données", "Technologie", "Finance", "Consulting", "Informatique", 
+                        "Marketing", "Intelligence Artificielle", "Design", "Gestion de données", "Informatique"),
+  CompétencesDemandées = c("SQL, Python", "Hadoop, Spark", "Python, R, SQL", "Tableau, SQL", "Python, ETL", 
+                           "Excel, SQL", "Python, TensorFlow", "Tableau, D3.js", "Gestion de base de données", "Big Data, Cloud Computing"),
+  LieuExercice = c("Paris", "Lyon", "Marseille", "Toulouse", "Nice", 
+                   "Nantes", "Strasbourg", "Bordeaux", "Lille", "Rennes"),
+  TypeEmploi = c("CDI", "CDI", "CDI", "CDI", "CDI", 
+                 "CDD", "CDI", "CDI", "CDI", "CDI"),
+  DuréeEmploi = c(NA, NA, NA, NA, NA, 
+                  "12 mois", NA, NA, NA, NA),
+  SiteSourceAnnonce = c("indeed.com", "monster.fr", "apec.fr", "linkedin.com", "glassdoor.fr", 
+                        "cadremploi.fr", "aijobs.com", "vizjobs.com", "datajobs.fr", "techarchjobs.com"),
+  LienAnnonce = c("link1", "link2", "link3", "link4", "link5", 
+                  "link6", "link7", "link8", "link9", "link10"),
+  stringsAsFactors = FALSE
+)
+
+
+print(job_data)
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+write.csv2(job_data, file = "data/job_data.csv")
+```
