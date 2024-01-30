@@ -47,7 +47,37 @@ job_data <- data.frame(
 )
 
 
-print(job_data)
+# Création de nouvelles entrées pour le DataFrame
+nouvelles_entrees <- data.frame(
+  RechercheEffectuée = c("développeur web", "spécialiste en cybersécurité", "analyste cloud", "développeur mobile", "consultant IT",
+                         "analyste de données marketing", "expert en IA", "spécialiste en visualisation de données", "chef de projet IT", "architecte de solutions cloud"),
+  IntituléPoste = c("Développeur Web Full Stack", "Cybersecurity Specialist", "Cloud Analyst", "Mobile App Developer", "IT Consultant",
+                    "Marketing Data Analyst", "AI Specialist", "Data Visualization Specialist", "IT Project Manager", "Cloud Solutions Architect"),
+  DescriptionPoste = c("Développement de sites web et d'applications", "Sécurisation des réseaux et des systèmes informatiques", "Gestion et optimisation des infrastructures cloud", "Développement d'applications mobiles sur iOS et Android", "Conseil en technologies de l'information",
+                       "Analyse des données de marketing et de vente", "Développement de solutions basées sur l'intelligence artificielle", "Création de tableaux de bord et de visualisations de données", "Gestion de projets informatiques", "Conception et mise en œuvre d'architectures cloud"),
+  FourchetteSalaire = c("40k-60k", "60k-80k", "50k-70k", "45k-65k", "55k-75k",
+                        "40k-60k", "70k-90k", "50k-70k", "60k-85k", "80k-100k"),
+  Entreprise = c("WebTech", "SecureNet", "CloudServices", "AppDevCo", "ITConsulting",
+                 "MarketAnalytics", "AIInnovations", "VisualTech", "ProjectSolutions", "CloudArchitects"),
+  SecteurEntreprise = c("Développement web", "Cybersécurité", "Cloud Computing", "Développement mobile", "Consulting IT",
+                        "Marketing", "Intelligence Artificielle", "Visualisation de données", "Gestion de projet", "Cloud Computing"),
+  CompétencesDemandées = c("JavaScript, React", "Sécurité informatique, Cryptographie", "AWS, Azure", "Swift, Kotlin", "Gestion de projet, ITIL",
+                           "Google Analytics, SQL", "Python, Deep Learning", "Tableau, Power BI", "Gestion de projet, Agile", "AWS, Architecture cloud"),
+  LieuExercice = c("Lyon", "Marseille", "Paris", "Toulouse", "Nantes",
+                   "Strasbourg", "Bordeaux", "Lille", "Rennes", "Nice"),
+  TypeEmploi = c("CDI", "CDI", "CDI", "CDI", "CDI",
+                 "CDD", "CDI", "CDI", "CDI", "CDI"),
+  DuréeEmploi = c(NA, NA, NA, NA, NA,
+                  "18 mois", NA, NA, NA, NA),
+  SiteSourceAnnonce = c("jobtech.fr", "cyberjobs.com", "cloudemploi.fr", "mobiledevjobs.com", "itconsultingjobs.fr",
+                        "marketingjobs.com", "aijobs.com", "vizjobs.com", "projectmanagementjobs.com", "cloudcareers.com"),
+  LienAnnonce = c("link11", "link12", "link13", "link14", "link15",
+                  "link16", "link17", "link18", "link19", "link20"),
+  stringsAsFactors = FALSE
+)
+
+# Fusion des données existantes avec les nouvelles entrées
+job_data <- rbind(job_data, nouvelles_entrees)
 
 ```
 

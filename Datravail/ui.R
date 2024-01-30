@@ -15,13 +15,19 @@ library(ggmap)
 library(pdftools)
 library(tesseract)
 library(stringr)
+library(bslib)
 
 job_data <- read.csv2("../data/job_data.csv")
 setDT(job_data)
 
 
-
 fluidPage(
+  
+  theme =bs_theme(
+    preset = "superhero"),
+  
+  
+  
   titlePanel("Exploration des Offres d'Emploi"),
   
   tabsetPanel(
@@ -32,7 +38,7 @@ fluidPage(
                       p("Ce guide vous aidera à comprendre comment utiliser l'application afin de pouvoir explorer les différentes offres d'emplois,
                         "),
                       h4("Tableau des offres"),
-                      p("Cette page permet."),
+                      p("Cette page permet.")
                       # Ajoutez plus d'étapes ici
                )
              )
@@ -40,6 +46,7 @@ fluidPage(
     tabPanel("Tableau des offres",
              
              # Filtres en haut
+             
              fluidRow(
                column(2, selectInput("secteurInput", "Secteur:", 
                                      choices = c("Tous", unique(job_data$SecteurEntreprise)))),
@@ -55,8 +62,6 @@ fluidPage(
              fluidRow(
                column(6, textInput("competenceInput", "Compétences:", placeholder = "Tapez des compétences ici"))
              ),
-             
-             
              # Tableau principal
              mainPanel(
                DT::dataTableOutput("tableAnnonces")
@@ -66,7 +71,7 @@ fluidPage(
     ),
     tabPanel("Charger CV",
              fluidRow(
-               column(6, fileInput("fileInput", "Charger CV (format PDF)", 
+               column(6, fileInput("fileInput", "Charger son CV (format PDF uniquement)", 
                                    accept = c(".pdf"))),
                column(6, actionButton("btnAnalyse", "Analyser les Compétences"))
              ),

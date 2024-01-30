@@ -8,9 +8,11 @@ setDT(job_data)
 
 function(input, output, session) {
   
-  
+
+  #bs_themer()
   
   ################ Code de la page "Tableau des offres" ################
+  
   filteredData <- reactive({
     
     dataFiltered <- job_data
@@ -53,14 +55,31 @@ function(input, output, session) {
     dataFiltered
   })
   
-  # Affiche la bdd avec seulement quelques colonnes importante et filtré
+  
+  
+   # Affiche la bdd avec seulement quelques colonnes importante et filtré
   output$tableAnnonces <- DT::renderDataTable({
     filteredData()[, .(RechercheEffectuée, IntituléPoste, FourchetteSalaire,
                        Entreprise, LieuExercice, TypeEmploi, DuréeEmploi,
                        SiteSourceAnnonce, LienAnnonce)]
-  }, options = list(lengthChange = FALSE, pageLength = 10,
-                    autoWidth = TRUE, dom = 't'),
-  selection = "single")
+  }, options = list(
+    pageLength = 10,  # Définit le nombre d'entrées par page
+    autoWidth = TRUE,  # Ajuste automatiquement la largeur des colonnes
+    dom = 'ftpi',  # Configure les éléments de contrôle à afficher (longueur, filtrage, table, informations, pagination)
+    language = list(
+      search = '<i class="fa fa-search" aria-hidden="true"></i>',
+      searchPlaceholder = 'Cherchez un job de la data, une entreprise, une ville ou un mot clé'
+    )
+    ),
+  selection = "single",
+  callback = JS(
+    "table.on('init.dt', function() {
+        $('.dataTables_filter input').css('width', '500px'); // Ajustez la largeur comme vous le souhaitez
+      });"
+  )
+  )
+  
+  
   
   
   # Permet de cliquer sur une ligne pour afficher plus de détail
@@ -136,7 +155,7 @@ function(input, output, session) {
       offres_correspondantes()[, .(IntituléPoste, Entreprise,
                                  LieuExercice, CompétencesDemandées)]
     }, options = list(lengthChange = FALSE, pageLength = 10,
-                      autoWidth = TRUE, dom = 't'),
+                      autoWidth = TRUE, dom = 'tpi'),
     selection = "single")
   })
   
