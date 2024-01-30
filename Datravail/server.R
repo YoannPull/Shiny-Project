@@ -91,7 +91,14 @@ function(input, output, session) {
         p(tags$p(class = "bold-underline", "Lien de l'annonce :"), annonceDetails$LienAnnonce),
         p(tags$p(class = "bold-underline", "Compétences Demandées :"), annonceDetails$CompétencesDemandées),
         
-        footer = tagList(modalButton("Fermer"))
+        footer = tagList(modalButton("Fermer")),
+        # JS pour fermer la page si on clique en dehors de la fenêtre
+        easyClose = TRUE,
+        tags$script(HTML("
+        $(document).on('click', '.modal-backdrop', function(){
+          $('.modal').modal('hide');
+        });
+      "))
       ))
     }
   })
@@ -105,6 +112,7 @@ function(input, output, session) {
     any(competences_offre_liste %in% competences_cv)
   }
   
+  offres_correspondantes <- reactiveVal()
   
   # Chargement du pdf et extraction de tous les mots unique pour match avec les
   # compétences de la bdd
@@ -121,41 +129,52 @@ function(input, output, session) {
     competences_cv <- unique(competences_cv)
     job_data$CorrespondanceCV <- sapply(job_data$CompétencesDemandées,
                                         function(x) verifier_competences(x, competences_cv))
-    offres_correspondantes <- job_data[job_data$CorrespondanceCV, ]
+    offres_correspondantes(job_data[job_data$CorrespondanceCV, ])
     
     # Affichage des résultats
     output$tableCorrespondances <- DT::renderDataTable({
-      offres_correspondantes[, .(IntituléPoste, Entreprise,
+      offres_correspondantes()[, .(IntituléPoste, Entreprise,
                                  LieuExercice, CompétencesDemandées)]
-    }, options = list(lengthChange = FALSE, pageLength = 10))
+    }, options = list(lengthChange = FALSE, pageLength = 10,
+                      autoWidth = TRUE, dom = 't'),
+    selection = "single")
   })
   
   
   # Permet de cliquer sur une ligne pour afficher plus de détail
   observeEvent(input$tableCorrespondances_rows_selected, {
     selectedRow <- input$tableCorrespondances_rows_selected
+    print(selectedRow)
     
-    if(length(selectedRow) > 0) {
-      offreDetails <- offres_correspondantes[selectedRow, ]
+    if(length(selectedRow) == 1) {
+      offreDetails <- offres_correspondantes()[selectedRow, ]
       showModal(modalDialog(
         title = "Détails de l'Offre Correspondante",
-        h3(offreDetails$IntituléPoste),
+        h3(as.character(offreDetails$IntituléPoste)),
         
         tags$style(HTML("
-        .bold-underline {
-          font-weight: bold;
-          text-decoration: underline;
-        }
+      .bold-underline {
+        font-weight: bold;
+        text-decoration: underline;
+      }
       ")),
-        p(tags$p(class = "bold-underline", "Description du Poste : "), offreDetails$DescriptionPoste),
-        p(tags$p(class = "bold-underline", "Fourchette de Salaire :"), offreDetails$FourchetteSalaire),
-        p(tags$p(class = "bold-underline", "Type d'emploi :"), offreDetails$TypeEmploi),
-        p(tags$p(class = "bold-underline", "Durée de l'emploi : "), offreDetails$DuréeEmploi),
-        p(tags$p(class = "bold-underline", "Site de l'annonce :"), offreDetails$SiteSourceAnnonce),
-        p(tags$p(class = "bold-underline", "Lien de l'annonce :"), offreDetails$LienAnnonce),
-        p(tags$p(class = "bold-underline", "Compétences Demandées :"), offreDetails$CompétencesDemandées),
+        p(tags$p(class = "bold-underline", "Description du Poste : "), as.character(offreDetails$DescriptionPoste)),
+        p(tags$p(class = "bold-underline", "Fourchette de Salaire :"), as.character(offreDetails$FourchetteSalaire)),
+        p(tags$p(class = "bold-underline", "Type d'emploi :"), as.character(offreDetails$TypeEmploi)),
+        p(tags$p(class = "bold-underline", "Durée de l'emploi : "), as.character(offreDetails$DuréeEmploi)),
+        p(tags$p(class = "bold-underline", "Site de l'annonce :"), as.character(offreDetails$SiteSourceAnnonce)),
+        p(tags$p(class = "bold-underline", "Lien de l'annonce :"), as.character(offreDetails$LienAnnonce)),
+        p(tags$p(class = "bold-underline", "Compétences Demandées :"), as.character(offreDetails$CompétencesDemandées)),
         
-        footer = tagList(modalButton("Fermer"))
+        footer = tagList(modalButton("Fermer")),
+        
+        # JS pour fermer la page si on clique en dehors de la fenêtre
+        easyClose = TRUE,
+        tags$script(HTML("
+        $(document).on('click', '.modal-backdrop', function(){
+          $('.modal').modal('hide');
+        });
+      "))
       ))
     }
   })
