@@ -9,9 +9,17 @@
 
 library(shiny)
 library(data.table)
+library(leaflet)
+library(tmaptools)
+library(ggmap)
+library(pdftools)
+library(tesseract)
+library(stringr)
 
 job_data <- read.csv2("../data/job_data.csv")
 setDT(job_data)
+
+
 
 fluidPage(
   titlePanel("Exploration des Offres d'Emploi"),
@@ -54,7 +62,16 @@ fluidPage(
                DT::dataTableOutput("tableAnnonces")
              )
     ),
-    tabPanel("Map")
+    tabPanel("Map"
+    ),
+    tabPanel("Charger CV",
+             fluidRow(
+               column(6, fileInput("fileInput", "Charger CV (format PDF)", 
+                                   accept = c(".pdf"))),
+               column(6, actionButton("btnAnalyse", "Analyser les Compétences"))
+             ),
+             DT::dataTableOutput("tableCorrespondances")
+    )
   ) 
   
   

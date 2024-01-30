@@ -55,4 +55,51 @@ print(job_data)
 write.csv2(job_data, file = "data/job_data.csv")
 ```
 
+```{r}
+library(pdftools)
+library(tesseract)
+library(stringr)
+```
+
+
+```{r}
+# loading pdf test :
+
+# Lire le contenu du PDF
+texte_cv <- 
+```
+
+```{r}
+# Cela dépend de la façon dont les compétences sont présentées dans le CV
+competences <- str_extract_all(texte_cv, "data")
+
+# Afficher les compétences extraites
+print(competences)
+
+```
+```{r}
+# Extraction du texte du CV (remplacer par le chemin de votre fichier)
+texte_cv <- tolower(pdf_ocr_text("data/CV Yoann.pdf"))
+
+# Exemple d'extraction de compétences du CV (ajuster selon le format du CV)
+competences_cv <- str_extract_all(texte_cv, "\\b([A-Za-z]+)\\b")[[1]]
+competences_cv <- unique(competences_cv)
+
+# Fonction pour vérifier si le CV correspond aux compétences demandées
+verifier_competences <- function(competences_offre, competences_cv) {
+  competences_offre <- str_to_lower(competences_offre)
+  competences_offre_liste <- unlist(str_split(competences_offre, ",\\s*"))
+  any(competences_offre_liste %in% competences_cv)
+}
+
+# Appliquer la fonction à chaque offre d'emploi
+job_data$CorrespondanceCV <- sapply(job_data$CompétencesDemandées, function(x) verifier_competences(x, competences_cv))
+
+# Afficher les offres correspondantes
+offres_correspondantes <- job_data[job_data$CorrespondanceCV, ]
+
+```
+
+
+
 
