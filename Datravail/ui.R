@@ -24,7 +24,8 @@ setDT(job_data)
 fluidPage(
   
   theme =bs_theme(
-    preset = "superhero"),
+    preset = "sandstone",fg = "#000",bg = "#FFFFFF", primary = "#000", secondary = "#77798A", 
+    font_scale = 1),
   
   
   
