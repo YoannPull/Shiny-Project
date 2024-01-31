@@ -189,7 +189,6 @@ function(input, output, session) {
                                         function(x) verifier_competences(x, competences_cv))
     offres_correspondantes <- job_data[job_data$CorrespondanceCV, ]
     
-    #j'ecris un prout
     # Affichage des résultats
     output$tableCorrespondances <- DT::renderDataTable({
       offres_correspondantes[, .(IntituléPoste, Entreprise,
