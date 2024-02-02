@@ -1,6 +1,8 @@
 library(shiny)
 library(data.table)
 library(tmaptools)
+library(dplyr)
+library(httr)
 
 job_data <- read.csv2("../data/job_data.csv")
 setDT(job_data)
@@ -121,6 +123,69 @@ function(input, output, session) {
       ))
     }
   })
+  
+  ################ Code de la page "Map" ################
+  
+  # fonction pour avoir la latitude et la longitude d'une ville
+  get_lat_long <- function(city_name) {
+    base_url <- "https://nominatim.openstreetmap.org/search"
+    params <- list(
+      format = "json",
+      q = city_name
+    )
+    
+    response <- GET(url = base_url, query = params)
+    data <- content(response, "text", encoding = "UTF-8")
+    data <- jsonlite::fromJSON(data)
+    
+    if (length(data) > 0) {
+      location <- data[1, ]
+      latitude <- as.numeric(location$lat)
+      longitude <- as.numeric(location$lon)
+      return(c(latitude, longitude))
+    } else {
+      cat("Erreur lors de la récupération des coordonnées.\n")
+      return(NULL)
+    }
+  }
+  
+  job_data$lat <- NA
+  job_data$lon <- NA
+  
+  # ajout de latitude et longitude dans notre DT
+  for (i in seq_along(job_data$LieuExercice)) {
+    ville <- job_data$LieuExercice[i]
+    coordinates <- get_lat_long(ville)
+    job_data$lat[i] <- coordinates[1]
+    job_data$lon[i] <- coordinates[2]
+  }
+  
+  counts_per_ville <- table(job_data$LieuExercice) # compte le nombre d'offre par ville
+  
+  output$mymap <- renderLeaflet({
+    leaflet(job_data) %>%
+      setView(lng = 2.2137, lat = 46.6031, zoom = 5) %>%  #on set la view sur la France
+      
+      addProviderTiles(providers$Stadia.StamenTonerLite,
+                       options = providerTileOptions(noWrap = TRUE) # carte de fond
+      ) %>%
+      addCircleMarkers(data = job_data,
+                       lng = ~lon,
+                       lat = ~lat,
+                       radius = 8,  # Rayon des cercles
+                       fillOpacity = 0.8,  # Opacité de remplissage
+                       color = "salmon",  # Couleur des cercles
+                       popup = ~paste0("<strong>", LieuExercice, "</strong>: ", counts_per_ville[LieuExercice], " offre(s)", "<br>",
+                                       "<a href=\"#\" onclick=\"Shiny.setInputValue('selectedCity', '", LieuExercice, "', {priority: 'event'});\">Voir les offres</a>"),  # Popup avec le nombre d'offres correspondantes
+                       group = "markers")  # Ajout d'un groupe pour une gestion plus facile
+    
+  })
+  
+  observeEvent(input$selectedCity, {
+    updateTabsetPanel(session, "tabs", selected = "Tableau des offres")
+    updateTextInput(session, "lieuInput", value = input$selectedCity)
+  })
+  
   
   ################ Code de la page "Chargez CV" ################
   

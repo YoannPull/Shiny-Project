@@ -32,6 +32,7 @@ fluidPage(
   titlePanel("Exploration des Offres d'Emploi"),
   
   tabsetPanel(
+    id = "tabs",
     tabPanel("Welcome Page",
              fluidRow(
                column(12,
@@ -44,6 +45,9 @@ fluidPage(
                )
              )
     ),
+    
+    ################ Code de la page "Tableau des offres" ################
+    
     tabPanel("Tableau des offres",
              
              # Filtres en haut
@@ -68,8 +72,15 @@ fluidPage(
                DT::dataTableOutput("tableAnnonces")
              )
     ),
-    tabPanel("Map"
-    ),
+    ################ Code de la page "MAP" ################
+    tabPanel("Map",
+      mainPanel(
+             leafletOutput("mymap", width = "80%",
+                           height = "600px"),
+             p()
+    )),
+    ################ Code de la page "Chargez CV" ################
+    
     tabPanel("Charger CV",
              fluidRow(
                column(6, fileInput("fileInput", "Charger son CV (format PDF uniquement)", 

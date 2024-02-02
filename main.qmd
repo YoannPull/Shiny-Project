@@ -92,12 +92,6 @@ library(stringr)
 ```
 
 
-```{r}
-# loading pdf test :
-
-# Lire le contenu du PDF
-texte_cv <- 
-```
 
 ```{r}
 # Cela dépend de la façon dont les compétences sont présentées dans le CV
@@ -132,4 +126,118 @@ offres_correspondantes <- job_data[job_data$CorrespondanceCV, ]
 
 
 
+
+```{r}
+test <- read.csv("data/output_bdd.csv")
+```
+
+
+```{r}
+test <- fread("StockUniteLegaleHistorique_utf8.csv")
+```
+```{r}
+test[denominationUniteLegale == "BNP PARIBAS",.(dateDebut,siren,denominationUniteLegale,activitePrincipaleUniteLegale)]
+```
+
+
+```{r}
+test[denominationUniteLegale == "BNP PARIBAS",.(dateDebut)]
+```
+
+```{r}
+library(data.table)
+
+# Convertir votre data frame en data.table si ce n'est pas déjà fait
+setDT(test)
+
+# Taille de chaque lot (chunk)
+chunk_size <- 1e6 
+
+# Nombre total de lignes
+total_rows <- nrow(test)
+
+# Créer un data.table vide pour stocker les résultats
+df_2022 <- data.table()
+
+# Traitement par lots
+for (start_row in seq(1, total_rows, by = chunk_size)) {
+    # Lire le lot actuel
+    end_row <- min(start_row + chunk_size - 1, total_rows)
+    chunk <- test[start_row:end_row, ]
+
+    # Filtrer pour l'année 2022
+    filtered_chunk <- chunk[format(as.IDate(dateDebut), "%Y") == "2022"]
+
+    # Ajouter les résultats filtrés au data.table final
+    df_2022 <- rbindlist(list(df_2022, filtered_chunk), use.names = TRUE)
+}
+
+# Maintenant, df_2022 contient toutes les lignes de l'année 2022
+
+```
+
+```{r}
+df_2022[denominationUniteLegale == "SQUARE",.(dateDebut,siren,denominationUniteLegale,activitePrincipaleUniteLegale)]
+```
+```{r}
+write.csv2(df_2022,"siren2022.csv")
+```
+
+
+
+```{r}
+
+```
+
+```{r}
+data[denominationUniteLegale == "HAGER",.(dateDebut,siren,denominationUniteLegale,activitePrincipaleUniteLegale)]
+```
+
+
+```{r}
+library(stringdist)
+library(data.table)
+```
+
+```{r}
+bdd <- fread("output_bdd.csv", header = T)
+data <- fread("siren2022.csv")
+```
+
+
+
+```{r}
+noms_incorrects <- bdd[,Entreprise]# Remplacez avec vos données
+noms_corrects <- unique(data[,denominationUniteLegale]) # Remplacez avec vos données
+
+
+
+noms_corriges <- sapply(noms_incorrects, function(nom_incorrect) {
+    # Filtrage préliminaire - par exemple, prendre les noms corrects dont la longueur est proche
+    longueur_nom_incorrect <- nchar(nom_incorrect)
+    candidats <- noms_corrects[abs(nchar(noms_corrects) - longueur_nom_incorrect) <= 3]
+
+    # Appliquer la distance de Levenshtein aux candidats
+    if(length(candidats) > 0) {
+        distances <- stringdist(nom_incorrect, candidats, method = "lv")
+        candidat_choisi <- candidats[which.min(distances)]
+    } else {
+        candidat_choisi <- NA
+    }
+
+    return(candidat_choisi)
+})
+
+
+
+```
+
+```{r}
+bdd$EntrepriseCor <- noms_corriges
+```
+
+
+```{r}
+bdd[,.(Entreprise,EntrepriseCor)]
+```
 
