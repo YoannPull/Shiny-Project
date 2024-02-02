@@ -262,6 +262,3 @@ function(input, output, session) {
       ))
     }
   })
-  
-  
-}
