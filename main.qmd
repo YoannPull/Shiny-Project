@@ -241,3 +241,45 @@ bdd$EntrepriseCor <- noms_corriges
 bdd[,.(Entreprise,EntrepriseCor)]
 ```
 
+
+### Deal with full csv :
+
+```{r}
+library(data.table)
+```
+
+
+```{r}
+data <- fread("data/full_data.csv")
+hello <- fread("data/hellowork_data.csv")
+wttj <- fread("data/wttj_data.csv")
+indeed <- fread("data/indeed_data.csv")
+
+job_data <- fread("data/job_data.csv",header = T)
+```
+
+
+```{r}
+data
+```
+
+
+
+```{r}
+cat("Job Data colnames \n")
+colnames(job_data)
+
+cat("Data colnames \n")
+colnames(data)
+```
+
+```{r}
+data
+```
+
+
+
+
+
+
+

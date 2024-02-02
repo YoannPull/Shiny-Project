@@ -17,7 +17,7 @@ library(tesseract)
 library(stringr)
 library(bslib)
 
-job_data <- read.csv2("../data/job_data.csv")
+job_data <- read.csv2("../data/data.csv")
 setDT(job_data)
 
 
@@ -74,11 +74,10 @@ fluidPage(
     ),
     ################ Code de la page "MAP" ################
     tabPanel("Map",
-      mainPanel(
-             leafletOutput("mymap", width = "80%",
-                           height = "600px"),
+             leafletOutput("mymap", width = "100%",
+                           height = "1000px"),
              p()
-    )),
+    ),
     ################ Code de la page "Chargez CV" ################
     
     tabPanel("Charger CV",
