@@ -3,26 +3,46 @@ library(data.table)
 library(tmaptools)
 library(dplyr)
 library(httr)
+library(shinyWidgets)
 
-job_data <- read.csv2("../data/job_data.csv")
+job_data <- read.csv2("../data/data2.csv")
+
 setDT(job_data)
-
-
-
 
 
 function(input, output, session) {
   
+  ################ Code de la page "Accueil" ################
   
+  observeEvent(input$ButtonTableau, {
+    # Actions à effectuer pour l'étape 1
+    # Par exemple, vous pouvez afficher des instructions spécifiques ou naviguer vers une autre partie de l'application.
+    updateTabItems(session, "tabs", selected = "tableau")
+  })
+
+  observeEvent(input$ButtonCarte, {
+    # Actions à effectuer pour l'étape 1
+    # Par exemple, vous pouvez afficher des instructions spécifiques ou naviguer vers une autre partie de l'application.
+    updateTabItems(session, "tabs", selected = "map")
+  })
+  
+  observeEvent(input$ButtonCV, {
+    # Actions à effectuer pour l'étape 1
+    # Par exemple, vous pouvez afficher des instructions spécifiques ou naviguer vers une autre partie de l'application.
+    updateTabItems(session, "tabs", selected = "cv")
+  })
+  
+  #bs_themer()
   
   ################ Code de la page "Tableau des offres" ################
+  
   filteredData <- reactive({
     
     dataFiltered <- job_data
     filters <- list(
       
       # Création des listes déroulantes pour filtrer
-      SecteurEntreprise = input$secteurInput,
+      SecteurActivité = input$secteurInput,
       IntituléPoste = input$posteInput,
       LieuExercice = input$lieuInput,
       FourchetteSalaire = input$salaireInput,
@@ -58,14 +78,32 @@ function(input, output, session) {
     dataFiltered
   })
   
+  
+  
   # Affiche la bdd avec seulement quelques colonnes importante et filtré
   output$tableAnnonces <- DT::renderDataTable({
     filteredData()[, .(RechercheEffectuée, IntituléPoste, FourchetteSalaire,
                        Entreprise, LieuExercice, TypeEmploi, DuréeEmploi,
                        SiteSourceAnnonce, LienAnnonce)]
-  }, options = list(lengthChange = FALSE, pageLength = 10,
-                    autoWidth = TRUE, dom = 't'),
-  selection = "single")
+  }, style = 'bootstrap',
+  options = list(
+    pageLength = 5,  # Définit le nombre d'entrées par page
+    autoWidth = TRUE,  # Ajuste automatiquement la largeur des colonnes
+    dom = 'ftpi',  # Configure les éléments de contrôle à afficher (longueur, filtrage, table, informations, pagination)
+    language = list(
+      search = '<i class="fa fa-search" aria-hidden="true"></i>',
+      searchPlaceholder = 'Cherchez un job de la data, une entreprise, une ville...'
+    )
+  ),
+  selection = "single",
+  callback = JS(
+    "table.on('init.dt', function() {
+        $('.dataTables_filter input').css('width', '500px'); // Ajustez la largeur comme vous le souhaitez
+      });"
+  )
+  )
+  
+  
   
   
   # Permet de cliquer sur une ligne pour afficher plus de détail
@@ -96,84 +134,59 @@ function(input, output, session) {
         p(tags$p(class = "bold-underline", "Lien de l'annonce :"), annonceDetails$LienAnnonce),
         p(tags$p(class = "bold-underline", "Compétences Demandées :"), annonceDetails$CompétencesDemandées),
         
-        footer = tagList(modalButton("Fermer"))
+        footer = tagList(modalButton("Fermer")),
+        # JS pour fermer la page si on clique en dehors de la fenêtre
+        easyClose = TRUE,
+        tags$script(HTML("
+        $(document).on('click', '.modal-backdrop', function(){
+          $('.modal').modal('hide');
+        });
+      "))
       ))
     }
   })
+  
   ################ Code de la page "Map" ################
-  
-  # fonction pour avoir la latitude et la longitude d'une ville
-  get_lat_long <- function(city_name) {
-    base_url <- "https://nominatim.openstreetmap.org/search"
-    params <- list(
-      format = "json",
-      q = city_name
-    )
-    
-    response <- GET(url = base_url, query = params)
-    data <- content(response, "text", encoding = "UTF-8")
-    data <- jsonlite::fromJSON(data)
-    
-    if (length(data) > 0) {
-      location <- data[1, ]
-      latitude <- as.numeric(location$lat)
-      longitude <- as.numeric(location$lon)
-      return(c(latitude, longitude))
-    } else {
-      cat("Erreur lors de la récupération des coordonnées.\n")
-      return(NULL)
-    }
-  }
-  
-  job_data$lat <- NA
-  job_data$lon <- NA
-  
-  # ajout de latitude et longitude dans notre DT
-  for (i in seq_along(job_data$LieuExercice)) {
-    ville <- job_data$LieuExercice[i]
-    coordinates <- get_lat_long(ville)
-    job_data$lat[i] <- coordinates[1]
-    job_data$lon[i] <- coordinates[2]
-  }
   
   counts_per_ville <- table(job_data$LieuExercice) # compte le nombre d'offre par ville
   
   output$mymap <- renderLeaflet({
     leaflet(job_data) %>%
-      setView(lng = 2.2137, lat = 46.6031, zoom = 5) %>%  #on set la view sur la france
+      setView(lng = 7.098110651792706, lat = 42.92920993114715, zoom = 5) %>%  # Vue centrée sur la France
       
-      addProviderTiles(providers$Stadia.StamenTonerLite,
-                       options = providerTileOptions(noWrap = TRUE) # carte de fond
-      ) %>%
+      addProviderTiles(providers$Stadia.AlidadeSmooth,  # Changement du fond de carte pour un style plus esthétique
+                       options = providerTileOptions(noWrap = TRUE)) %>%
+      
       addCircleMarkers(data = job_data,
-                       lng = ~lon,
-                       lat = ~lat,
+                       ~lon, ~lat,  # Coordonnées des cercles
                        radius = 8,  # Rayon des cercles
                        fillOpacity = 0.8,  # Opacité de remplissage
-                       color = "salmon",  # Couleur des cercles
+                       color = "#D7BDE2",  # Couleur des cercles en violet très clair
+                       fillColor = "#D7BDE2",  # Couleur de remplissage des cercles
                        popup = ~paste0("<strong>", LieuExercice, "</strong>: ", counts_per_ville[LieuExercice], " offre(s)", "<br>",
-                                       "<a href=\"#\" onclick=\"Shiny.setInputValue('selectedCity', '", LieuExercice, "', {priority: 'event'});\">Voir les offres</a>"),  # Popup avec le nombre d'offres correspondantes
-                       group = "markers")  # Ajout d'un groupe pour une gestion plus facile
-  
+                                       "<a href=\"#\" onclick=\"Shiny.setInputValue('selectedCity', '", LieuExercice, "', {priority: 'event'});\">Voir les offres</a>"),
+                       group = "markers")  
   })
   
+  
   observeEvent(input$selectedCity, {
-    updateTabsetPanel(session, "tabs", selected = "Tableau des offres")
+    updateTabItems(session,inputId = "tabs", selected = "tableau")
     updateTextInput(session, "lieuInput", value = input$selectedCity)
-    })
+  })
+  
   
   ################ Code de la page "Chargez CV" ################
   
   
   verifier_competences <- function(competences_offre, competences_cv) {
-    competences_offre <- str_to_lower(competences_offre)
+    competences_offre <- tolower(competences_offre)
     competences_offre_liste <- unlist(str_split(competences_offre, ",\\s*"))
-    any(competences_offre_liste %in% competences_cv)
+    nb_correspondances <- sum(competences_offre_liste %in% competences_cv)
+    proportion_correspondances <- round(100 * nb_correspondances / length(competences_offre_liste),2)
+    return(proportion_correspondances) # Retourne la proportion de compétences qui matchent
   }
   
-  
-  # Chargement du pdf et extraction de tous les mots unique pour match avec les
-  # compétences de la bdd
+  offres_correspondantes <- reactiveVal()
   
   observeEvent(input$btnAnalyse, {
     req(input$fileInput)
@@ -185,46 +198,67 @@ function(input, output, session) {
     # Extraction des compétences du CV
     competences_cv <- str_extract_all(texte_cv, "\\b([A-Za-z]+)\\b")[[1]]
     competences_cv <- unique(competences_cv)
-    job_data$CorrespondanceCV <- sapply(job_data$CompétencesDemandées,
-                                        function(x) verifier_competences(x, competences_cv))
-    offres_correspondantes <- job_data[job_data$CorrespondanceCV, ]
     
-    # Affichage des résultats
+    # Calcul de la proportion de correspondance pour chaque offre
+    job_data$ProportionCompetencesCorrespondantes <- sapply(job_data$CompétencesDemandées,
+                                                            function(x) verifier_competences(x, competences_cv))
+    
+    # Filtrer pour garder seulement les offres avec au moins une compétence correspondante (proportion > 0)
+    job_data_filtré <- job_data[job_data$ProportionCompetencesCorrespondantes > 0, ]
+    
+    # Trier les offres par la proportion de compétences correspondantes en ordre décroissant
+    offres_triees <- job_data_filtré[order(-job_data_filtré$ProportionCompetencesCorrespondantes), ]
+    
+    offres_correspondantes(offres_triees)
+    
+    # Affichage des résultats avec la proportion de compétences qui matchent
     output$tableCorrespondances <- DT::renderDataTable({
-      offres_correspondantes[, .(IntituléPoste, Entreprise,
-                                 LieuExercice, CompétencesDemandées)]
-    }, options = list(lengthChange = FALSE, pageLength = 10))
+      offres_correspondantes()[, .(IntituléPoste,
+                                   Entreprise,
+                                   LieuExercice,
+                                   CompétencesDemandées,
+                                   "Proportion Competences Correspondantes" = paste0(ProportionCompetencesCorrespondantes,"%"))]
+    }, options = list(lengthChange = FALSE, pageLength = 10, autoWidth = TRUE, dom = 'tpi'),
+    selection = "single")
   })
+  
   
   
   # Permet de cliquer sur une ligne pour afficher plus de détail
   observeEvent(input$tableCorrespondances_rows_selected, {
     selectedRow <- input$tableCorrespondances_rows_selected
+    print(selectedRow)
     
-    if(length(selectedRow) > 0) {
-      offreDetails <- offres_correspondantes[selectedRow, ]
+    if(length(selectedRow) == 1) {
+      offreDetails <- offres_correspondantes()[selectedRow, ]
       showModal(modalDialog(
         title = "Détails de l'Offre Correspondante",
-        h3(offreDetails$IntituléPoste),
+        h3(as.character(offreDetails$IntituléPoste)),
         
         tags$style(HTML("
-        .bold-underline {
-          font-weight: bold;
-          text-decoration: underline;
-        }
+      .bold-underline {
+        font-weight: bold;
+        text-decoration: underline;
+      }
       ")),
-        p(tags$p(class = "bold-underline", "Description du Poste : "), offreDetails$DescriptionPoste),
-        p(tags$p(class = "bold-underline", "Fourchette de Salaire :"), offreDetails$FourchetteSalaire),
-        p(tags$p(class = "bold-underline", "Type d'emploi :"), offreDetails$TypeEmploi),
-        p(tags$p(class = "bold-underline", "Durée de l'emploi : "), offreDetails$DuréeEmploi),
-        p(tags$p(class = "bold-underline", "Site de l'annonce :"), offreDetails$SiteSourceAnnonce),
-        p(tags$p(class = "bold-underline", "Lien de l'annonce :"), offreDetails$LienAnnonce),
-        p(tags$p(class = "bold-underline", "Compétences Demandées :"), offreDetails$CompétencesDemandées),
+        p(tags$p(class = "bold-underline", "Description du Poste : "), as.character(offreDetails$DescriptionPoste)),
+        p(tags$p(class = "bold-underline", "Fourchette de Salaire :"), as.character(offreDetails$FourchetteSalaire)),
+        p(tags$p(class = "bold-underline", "Type d'emploi :"), as.character(offreDetails$TypeEmploi)),
+        p(tags$p(class = "bold-underline", "Durée de l'emploi : "), as.character(offreDetails$DuréeEmploi)),
+        p(tags$p(class = "bold-underline", "Site de l'annonce :"), as.character(offreDetails$SiteSourceAnnonce)),
+        p(tags$p(class = "bold-underline", "Lien de l'annonce :"), as.character(offreDetails$LienAnnonce)),
+        p(tags$p(class = "bold-underline", "Compétences Demandées :"), as.character(offreDetails$CompétencesDemandées)),
         
-        footer = tagList(modalButton("Fermer"))
+        footer = tagList(modalButton("Fermer")),
+        
+        # JS pour fermer la page si on clique en dehors de la fenêtre
+        easyClose = TRUE,
+        tags$script(HTML("
+        $(document).on('click', '.modal-backdrop', function(){
+          $('.modal').modal('hide');
+        });
+      "))
       ))
     }
   })
-  
-  
 }
